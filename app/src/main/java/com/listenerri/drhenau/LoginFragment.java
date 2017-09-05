@@ -108,10 +108,6 @@ public class LoginFragment extends Fragment {
             mAccountView.setError(getString(R.string.error_field_required));
             focusView = mAccountView;
             cancel = true;
-        } else if (!isAccountValid(account)) {
-            mAccountView.setError(getString(R.string.error_invalid_account));
-            focusView = mAccountView;
-            cancel = true;
         }
 
         // 检查密码规范
@@ -158,12 +154,8 @@ public class LoginFragment extends Fragment {
         }
     }
 
-    private boolean isAccountValid(String account) {
-        return account.length() == 10;
-    }
-
     private boolean isPasswordValid(String password) {
-        return password.length() > 4;
+        return password.length() >= 3;
     }
 
     // 定义进度条样式

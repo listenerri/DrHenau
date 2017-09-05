@@ -134,7 +134,7 @@ public class DrcomService extends Service {
                         .setContentText("手机已成功登录网络")
                         .setTicker("DrHenau运行中")
                         .setWhen(System.currentTimeMillis())
-                        .setOngoing(false)      //用户无法滑动删除通知栏
+                        .setOngoing(true)      //用户无法滑动删除通知栏
                         .setContentIntent(contentIntent);
         Notification notification = mBuilder.build();
         startForeground(FOREGROUND_ID,notification);    //前台，防止被系统kill
