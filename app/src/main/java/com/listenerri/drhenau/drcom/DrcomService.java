@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -23,7 +24,12 @@ import android.widget.Toast;
 import com.listenerri.drhenau.MainActivity;
 import com.listenerri.drhenau.R;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -45,6 +51,8 @@ public class DrcomService extends Service {
     private String password;
     private HostInfo mHostInfo;
     private boolean isLogin = false; //是否登陆成功，用于注销和重复登陆判断
+    private boolean DEBUG = true; //是否输出日志到文件
+    private FileWriter fw = null; //日志文件
 
     private final static int FOREGROUND_ID = 1000;
     private NetWorkChangeReceiver mNetWorkReceiver;
@@ -58,13 +66,16 @@ public class DrcomService extends Service {
         mHostInfo = (HostInfo)intent.getSerializableExtra("info");
         username = mHostInfo.getUsername();
         password = mHostInfo.getPassword();
-      
+        initLogFile();
         startThread();
         return super.onStartCommand(intent, flags, startId);
     }
     //打日志，封装一下，方便修改
     private void performLogCall(String msg){
+
         Log.i("DrcomService", msg);
+        //把日志保存到内部存储中,方便查看
+        if (DEBUG) writeToFile(msg);
     }
     //需要显示给用户看的
     private void performMsgCall(final String msg){
@@ -75,6 +86,47 @@ public class DrcomService extends Service {
                 Toast.makeText(getApplicationContext(), "Drcom:"+msg, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+    private void writeToFile(String msg) {
+        if(fw!=null){
+            try {
+                fw.write(msg+"\n");
+                fw.flush();
+            } catch (IOException e) {
+                Log.i("DrcomService", "unable to write to log file !");
+            }
+        }else {
+            Log.i("DrcomService", "unable to open log file !");
+        }
+    }
+    //确保可以把日志写出到文件
+    private void initLogFile() {
+        //检查挂载
+        if ( Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) ) {
+            //存储根目录
+            File espath = Environment.getExternalStorageDirectory();
+            //drhenau目录
+            File logFilePath = new File(espath, "drheau");
+            //drhenau目录状态
+            if (!logFilePath.isDirectory()) {
+                Log.i("DrcomService", "drhenau dir is not exist !");
+                logFilePath.deleteOnExit();
+                if (logFilePath.mkdirs()){
+                    Log.i("DrcomService", "drhenau dir is created !");
+                }
+            }
+            //创建日志文件
+            File logFile = new File(logFilePath, "DrcomService.log");
+            try {
+                fw = new FileWriter(logFile, false);
+                Log.i("DrcomService", "log file is "+logFile.getAbsolutePath());
+            } catch (IOException e) {
+                Log.i("DrcomService", "log file open failed ! make fw to null");
+            }
+
+        }else {
+            Log.i("DrcomService", "external storage is not mounted !");
+        }
     }
     //停止Thread : http://stackoverflow.com/questions/680180/where-to-stop-destroy-threads-in-android-service-class
     private  volatile Thread runner;
@@ -119,6 +171,13 @@ public class DrcomService extends Service {
         cancelNotification();
         if(mNetWorkReceiver != null) {
             this.unregisterReceiver(mNetWorkReceiver);
+        }
+        try {
+            fw.flush();
+            fw.close();
+            Log.i("DrcomService", "close FileWriter..");
+        } catch (IOException e) {
+            Log.i("DrcomService", "close FileWriter failed !");
         }
     }
 
