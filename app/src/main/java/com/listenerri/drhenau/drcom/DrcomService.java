@@ -135,11 +135,12 @@ public class DrcomService extends Service {
             runner = new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    performLogCall("start mainRun()");
                     mainRun();
                 }
             });
-            runner.start();
         }
+        runner.start();
     }
     private synchronized void stopThread(){
         if(runner != null){
@@ -173,9 +174,9 @@ public class DrcomService extends Service {
             this.unregisterReceiver(mNetWorkReceiver);
         }
         try {
+            performLogCall("close FileWriter..");
             fw.flush();
             fw.close();
-            Log.i("DrcomService", "close FileWriter..");
         } catch (IOException e) {
             Log.i("DrcomService", "close FileWriter failed !");
         }
@@ -309,7 +310,7 @@ public class DrcomService extends Service {
                     }
                 } catch (SocketTimeoutException e) {
                     e.printStackTrace();
-                    performLogCall(e.getCause().getMessage());
+                    performLogCall(e.getMessage());
                     reconnectTimes++;
                     //重连多次后放弃
                     if(reconnectTimes > DrcomConfig.ReconnectTIMES){
@@ -341,26 +342,27 @@ public class DrcomService extends Service {
                 }
             }
         } catch (SocketTimeoutException e) {
-            e.printStackTrace();
             performMsgCall("通信超时:"+e.getMessage());
             exception = true;
         } catch (IOException e) {
-            performMsgCall("IO 异常"+e.getMessage());
-
+            performMsgCall("IO 异常:"+e.getMessage());
             exception = true;
         } catch (Exception e) {
+            e.printStackTrace();
+            performMsgCall("未知错误:"+e.getMessage());
             exception = true;
         } finally {
             if (exception) {//若发生了异常：密码错误等。 则应允许重新登录
                 //TODO 重新登录
                 cancelNotification();
-                stopSelf(); //停止service的运行
                 isLogin = false;
             }
             if (client != null) {
                 client.close();
                 client = null;
+                performLogCall("mainRun() quit..");
             }
+            stopSelf(); //停止service的运行
         }
     }
 
@@ -417,7 +419,7 @@ public class DrcomService extends Service {
         } catch (IOException e) {
             performMsgCall("认证失败");
         }
-        return true;
+        return false;
     }
     private boolean login() throws IOException {
         byte[] buf = makeLoginPacket();

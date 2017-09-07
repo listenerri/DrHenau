@@ -46,7 +46,7 @@
             android:name=".drcom.DrcomService"
             android:enabled="true"
             android:exported="false"
-            android:process=":white" />
+            android:process=":drcom" />
     </application>
 
 </manifest>
