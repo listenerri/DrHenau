@@ -11,6 +11,7 @@
 
     <application
         android:allowBackup="true"
+        android:persistent="true"
         android:icon="@mipmap/drhenau"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -19,34 +20,21 @@
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
+            <intent-filter android:priority="1000">
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="com.tencent.tauth.AuthActivity"
-            android:noHistory="true"
-            android:launchMode="singleTask" >
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="tencent222222" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name="com.tencent.connect.common.AssistActivity"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            />
 
         <service
             android:name=".drcom.DrcomService"
             android:enabled="true"
             android:exported="false"
-            android:process=":drcom" />
+            android:process=":drcom">
+            <intent-filter android:priority="1000">
+                <action android:name=".drcom.DrcomService"/>
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>
