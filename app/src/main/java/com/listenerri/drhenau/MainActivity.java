@@ -1,6 +1,5 @@
 package com.listenerri.drhenau;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
@@ -13,22 +12,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.tencent.tauth.Tencent;
-
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String AppId = "222222";
-    public static Tencent mTencent;
-    public static Context mContext;
-    public static DrawerLayout drawer = null;
-
-    private ActionBarDrawerToggle toggle = null;
-    private Toolbar toolbar = null;
-    private NavigationView navigationView = null;
-    private FragmentManager fm = null;
-    private FragmentTransaction ft = null;
-
+    private DrawerLayout drawer = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,30 +23,23 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initFields();
-        setDefaultFragment();
     }
 
     public void initFields() {
-        mTencent = Tencent.createInstance(AppId, this);
-        mContext = this;
-
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        toggle = new ActionBarDrawerToggle(
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(new MyNavigationItemSelectedListener());
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(new MyNavigationItemSelectedListener(this, drawer));
 
-        fm = getSupportFragmentManager();
-        ft = fm.beginTransaction();
-    }
-
-    public void setDefaultFragment() {
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
         ft.add(R.id.fragmentContainer, new LoginFragment());
         ft.commit();
     }
